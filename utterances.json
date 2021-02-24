@@ -1,0 +1,93 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "recommendation app",
+            "intents": [
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": [
+                        "guide me",
+                        "how to use this app",
+                        "help me please",
+                        "I need help"
+                    ]
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": []
+                },
+                {
+                    "name": "HelloWorldIntent",
+                    "slots": [],
+                    "samples": [
+                        "hello",
+                        "how are you",
+                        "say hi world",
+                        "say hi",
+                        "hi",
+                        "say hello world",
+                        "say hello"
+                    ]
+                },
+                {
+                    "name": "AMAZON.NavigateHomeIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.FallbackIntent",
+                    "samples": []
+                },
+                {
+                    "name": "compliment",
+                    "slots": [],
+                    "samples": [
+                        "give me a clap",
+                        "praise me",
+                        "please boost my energy",
+                        "cheer me up"
+                    ]
+                },
+                {
+                    "name": "askbenefit",
+                    "slots": [],
+                    "samples": [
+                        "what are my benefits",
+                        "may i know about my benefits",
+                        "what benefits do i have under the policy i have",
+                        "tell me about my benefits"
+                    ]
+                },
+                {
+                    "name": "askservice",
+                    "slots": [
+                        {
+                            "name": "disease",
+                            "type": "AMAZON.Actor"
+                        }
+                    ],
+                    "samples": [
+                        "benefits that i can get for {disease}",
+                        "information about {disease}",
+                        "tell me about how much i can claim for {disease}"
+                    ]
+                },
+                {
+                    "name": "askrecommend",
+                    "slots": [],
+                    "samples": [
+                        "recommend me a plan",
+                        "recommend a policy",
+                        "tell me about a prospective insurance product",
+                        "recommend an insurance plan for me",
+                        "can i get an insurance recommendation"
+                    ]
+                }
+            ],
+            "types": []
+        }
+    }
+}
