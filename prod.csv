@@ -1,3 +1,3 @@
-id,pronce,pramt,interest
-1234,yes,$10000,yes
-2345,no,$500,no
+id,pronce,pramt,interest,term_yrs
+1234,yes,$10000,yes,10
+2345,no,$500,no,15
