@@ -85,6 +85,22 @@
                         "recommend an insurance plan for me",
                         "can i get an insurance recommendation"
                     ]
+                },
+                {
+                    "name": "askid",
+                    "slots": [
+                        {
+                            "name": "id",
+                            "type": "AMAZON.Actor"
+                        }
+                    ],
+                    "samples": [
+                        "i guess my userid is {id}",
+                        "it's {id}",
+                        "my userid is {id}",
+                        "here is my userid {id}",
+                        "my id is {id}"
+                    ]
                 }
             ],
             "types": []

@@ -1,11 +1,12 @@
 """
-AWS lambda code by end of part 2 of programming alexa series
+AWS lambda code for Voicebot
+### author: Sandipan Dey
 """
 
 import random
 import json
 
-#import pandas as pd
+import pandas as pd
 
 # --------------- Helpers that build all of the responses ----------------------
 
@@ -38,6 +39,31 @@ def build_response(session_attributes, speechlet_response):
 
 
 # --------------- Functions that control the skill's behavior ------------------
+
+def get_id_response(intent, session):
+    """ An example of a custom intent. Same structure as welcome message, just make sure to add this intent
+    in your alexa skill in order for it to work.
+    """
+    print("SESSION BELOW")
+    print(session)
+    session_attributes = {}
+    card_title = "Identify"
+    df = pd.read_csv('user.csv')
+    
+    id = intent['slots']['id']['value']
+    print(id)
+    row = df.loc[df.id == int(id), 'name']
+    
+    if len(row) != 0:
+        speech_output = 'Welcome {}'.format(row.values[0])
+    else:
+        speech_output = 'Your id is not there in my database!'
+    reprompt_text = "I said " + speech_output
+        
+    should_end_session = False
+    return build_response(session_attributes, build_speechlet_response(
+        card_title, speech_output, reprompt_text, should_end_session))
+
 def get_benefit_response():
     """ An example of a custom intent. Same structure as welcome message, just make sure to add this intent
     in your alexa skill in order for it to work.
@@ -49,6 +75,7 @@ def get_benefit_response():
     should_end_session = False
     return build_response(session_attributes, build_speechlet_response(
         card_title, speech_output, reprompt_text, should_end_session))
+
 
 def get_service_response(intent, session):
     """ An example of a custom intent. Same structure as welcome message, just make sure to add this intent
@@ -97,10 +124,10 @@ def get_welcome_response():
     """
     session_attributes = {}
     card_title = "Welcome"
-    speech_output = "Hello, I am your recommendation assitant, your application has started! you can ask for your benefits or ask for help!"
+    speech_output = "Hello, I am your recommendation assitant, your application has started! you can ask for your benefits or ask for help! First tell me your user id!"
     # If the user either does not reply to the welcome message or says something
     # that is not understood, they will be prompted again with this text.
-    reprompt_text = "I don't know if you heard me, I am your recommendation assitant!"
+    reprompt_text = "I don't know if you heard me, I am your recommendation assitant! Tell me your user id!"
     should_end_session = False
     return build_response(session_attributes, build_speechlet_response(
         card_title, speech_output, reprompt_text, should_end_session))
@@ -142,7 +169,9 @@ def on_intent(intent_request, session):
     intent_name = intent_request['intent']['name']
 
     # Dispatch to your skill's intent handlers
-    if intent_name == "askbenefit":
+    if intent_name == "askid":
+        return get_id_response(intent, session)
+    elif intent_name == "askbenefit":
         return get_benefit_response()
     elif intent_name == "askservice":
         return get_service_response(intent, session)
