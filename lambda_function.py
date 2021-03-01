@@ -6,6 +6,8 @@ AWS lambda code for Voicebot
 import random
 import json
 
+#!pip install pandas
+
 import pandas as pd
 
 # --------------- Helpers that build all of the responses ----------------------
@@ -39,36 +41,11 @@ def build_response(session_attributes, speechlet_response):
 
 
 # --------------- Functions that control the skill's behavior ------------------
-
-def get_id_response(intent, session):
+def get_benefit_response(intent, session):
     """ An example of a custom intent. Same structure as welcome message, just make sure to add this intent
     in your alexa skill in order for it to work.
     """
-    print("SESSION BELOW")
-    print(session)
-    session_attributes = {}
-    card_title = "Identify"
-    df = pd.read_csv('user.csv')
-    
-    id = intent['slots']['id']['value']
-    print(id)
-    row = df.loc[df.id == int(id), 'name']
-    
-    if len(row) != 0:
-        speech_output = 'Welcome {}'.format(row.values[0])
-    else:
-        speech_output = 'Your id is not there in my database!'
-    reprompt_text = "I said " + speech_output
-        
-    should_end_session = False
-    return build_response(session_attributes, build_speechlet_response(
-        card_title, speech_output, reprompt_text, should_end_session))
-
-def get_benefit_response():
-    """ An example of a custom intent. Same structure as welcome message, just make sure to add this intent
-    in your alexa skill in order for it to work.
-    """
-    session_attributes = {}
+    session_attributes = session.get('attributes', {})
     card_title = "Benefits"
     speech_output = 'what service do you want to know more about?'
     reprompt_text = "I said," + speech_output
@@ -76,6 +53,31 @@ def get_benefit_response():
     return build_response(session_attributes, build_speechlet_response(
         card_title, speech_output, reprompt_text, should_end_session))
 
+def get_id_response(intent, session):
+    """ An example of a custom intent. Same structure as welcome message, just make sure to add this intent
+    in your alexa skill in order for it to work.
+    """
+    print("SESSION BELOW")
+    print(session)
+    card_title = "Identify"
+    df = pd.read_csv('user.csv')
+    
+    id = intent['slots']['id']['value']
+    print(id)
+    session_attributes = {'id': int(id)}
+
+    row = df.loc[df.id == int(id), 'name']
+    
+    if len(row) != 0:
+        speech_output = 'Welcome {}. '.format(row.values[0])
+    else:
+        speech_output = 'Your id is not there in my database! '
+    speech_output += 'What do you want to know about?'
+    reprompt_text = "I said " + speech_output
+        
+    should_end_session = False
+    return build_response(session_attributes, build_speechlet_response(
+        card_title, speech_output, reprompt_text, should_end_session))
 
 def get_service_response(intent, session):
     """ An example of a custom intent. Same structure as welcome message, just make sure to add this intent
@@ -83,20 +85,27 @@ def get_service_response(intent, session):
     """
     print("SESSION BELOW")
     print(session)
-    session_attributes = {}
     card_title = "Service"
-    #df = pd.read_csv('insurance.csv')
+    disease = intent['slots']['disease']['value']
     #with open('test.json') as json_file:
     #    cov = json.load(json_file)['disease']
-    cov = {'diabetes': {'prop': '100%', 'amt': '$20000', 'claimed': '$20'}, \
-           'orthopedics': {'prop': '80%', 'amt': '$30000', 'claimed': '$4000'}}
-
-    disease = intent['slots']['disease']['value']
-    
-    if disease in cov:  
-        speech_output = 'your coverage for {} is {} and you have claimed {} of {}'.format(disease, cov[disease]['prop'], cov[disease]['claimed'], cov[disease]['amt'])
+    session_attributes = session.get('attributes', {})
+    id = int(session_attributes['id'])
+    dfd = pd.read_csv('disease.csv')
+    dfc = pd.read_csv('userclaim.csv')
+    dfc = pd.merge(dfc, dfd, left_on='did', right_on='id').drop('id', axis=1)
+    dfpc = pd.read_csv('prodcov.csv')
+    dfpc = pd.merge(dfpc, dfd, left_on='did', right_on='id').drop('id', axis=1)
+    dfup = pd.read_csv('userprod.csv')
+    dfupc = pd.merge(dfup, dfpc, left_on='pid', right_on='pid')
+    df = pd.merge(dfc, dfupc, left_on=['uid','pid','did','name'], right_on=['uid','pid', 'did','name'], how='outer').fillna('$0')
+    row = df.loc[(df.uid == id) & (df.name == disease.lower()),['amt', 'maxamt']]
+    print(row)
+    if len(row) > 0:
+        speech_output = 'your coverage for {} is {} and you have claimed {} of {}'.format(disease, row.values[0][1], row.values[0][0], row.values[0][1])
     else:
         speech_output = '{} is not covered in your policy'.format(disease)
+
     reprompt_text = "I said " + speech_output
         
     should_end_session = False
@@ -172,7 +181,7 @@ def on_intent(intent_request, session):
     if intent_name == "askid":
         return get_id_response(intent, session)
     elif intent_name == "askbenefit":
-        return get_benefit_response()
+        return get_benefit_response(intent, session)
     elif intent_name == "askservice":
         return get_service_response(intent, session)
     elif intent_name == "askrecommend":
