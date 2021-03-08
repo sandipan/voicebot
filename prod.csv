@@ -1,3 +1,5 @@
 id,pronce,pramt,interest,term_yrs
 1234,yes,$10000,yes,10
 2345,no,$500,no,15
+3456,no,$400,yes,2
+4567,no,$600,no,3
