@@ -149,6 +149,49 @@
                         "i want to unregister",
                         "remove my id from the system"
                     ]
+                },
+                {
+                    "name": "adduser",
+                    "slots": [],
+                    "samples": [
+                        "can you subscribe me",
+                        "let me register",
+                        "i want to get subscribed",
+                        "please insert me into your system",
+                        "i want to register and buy products",
+                        "subscribe me",
+                        "i wanna subscribe",
+                        "i want to add my userid ",
+                        "register me in the system",
+                        "i wanna register into the system"
+                    ]
+                },
+                {
+                    "name": "askinfo",
+                    "slots": [
+                        {
+                            "name": "name",
+                            "type": "AMAZON.Actor"
+                        },
+                        {
+                            "name": "age",
+                            "type": "AMAZON.Actor"
+                        },
+                        {
+                            "name": "gender",
+                            "type": "AMAZON.Actor"
+                        }
+                    ],
+                    "samples": [
+                        "my good name is {name} and i am {age} years old and i am {gender}",
+                        "my name is {name} my age will be {age} years this month and  obvisouly i am {gender}",
+                        "myself {name} and i am {age} years old i am {gender}",
+                        "my name is {name} and {age} years old i am {gender}",
+                        "my name {name} my age {age} and my gender is {gender}",
+                        "myself {name} and my age is {age} and my gender is {gender}",
+                        "myself {name} i am {age} years old and i am {gender}",
+                        "my name is {name} and i am {age} years old and i am {gender}"
+                    ]
                 }
             ],
             "types": []

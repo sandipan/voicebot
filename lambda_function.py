@@ -87,7 +87,8 @@ def get_premium_info(uid, pid):
 def get_premium_alert(uid):
     
     df = pd.read_csv("userprod.csv")
-    row = df.loc[(df.uid == id),'pid']
+    row = df.loc[(df.uid == uid),'pid']
+    print(row.values)
     speech_output = ''
     for pid in row.values:
         prem_count, prem_amt, user_name, pr_once, npr_paid, start_date = get_premium_info(uid, pid)
@@ -95,10 +96,15 @@ def get_premium_alert(uid):
         today_date = datetime.datetime.now()
         prem_to_paid = (today_date - start_date).days/365   
         default_n = int(prem_to_paid) - npr_paid
-        if default_n >= 2:
-            speech_output += 'Hey {} '.format(user_name) + 'It seems that you have missed your last few premiums! please pay it before {}'.format(due_date.strftime("%d")) + 'of {} '.format(due_date.strftime("%B")) + 'in {} '.format(due_date.strftime("%Y"))  
-        else :
-            speech_output += 'Hey {} '.format(user_name) +'No premium due'
+        if pr_once == 'no':
+            due_date = start_date + relativedelta(years = int(prem_to_paid))
+            if default_n >= 2:
+                speech_output += 'It seems that you have missed your last few premiums for your product {} please pay it ASAP'.format(pid)  
+            elif default_n ==1 :
+                speech_output += 'Your last premium for product {} was missed. Please pay your premium before {} '.format(pid, due_date.strftime("%d")) + 'of {} '.format(due_date.strftime("%B")) + 'in {} '.format(due_date.strftime("%Y"))
+        elif pr_once =='yes' and npr_paid == 0:
+            speech_output += 'Your total premium amount for product {} is {}, which is not yet paid!. '.format(pid, prem_amt) + 'Please Pay it ASAP' 
+
     return speech_output
 
         
@@ -125,9 +131,10 @@ def get_id_response(intent, session):
         alert = get_policy_expiry_alert(id)
         if alert:
             speech_output += 'Here are policy expiry alerts for you! ' + alert
-        #alert = get_premium_alert(id)
-        #if alert:
-        #    speech_output += 'Here are premium due alerts for you! ' + alert
+        alert = get_premium_alert(id)
+        print(alert)
+        if alert:
+            speech_output += 'Here are premium due alerts for you! ' + alert
         speech_output += ' Now, tell me what do you want to know about?'
     else:
         speech_output = 'Please register to the system first and buy an insurance product! '
@@ -211,6 +218,7 @@ def get_product_response(intent, session):
     """
     card_title = "Product"
     session_attributes = session.get('attributes', {})
+    print(session_attributes)
     uid = int(session_attributes['id'])
     pid = intent['slots']['pid']['value']
     pid = int(''.join(filter(str.isalnum, pid)))
@@ -218,12 +226,20 @@ def get_product_response(intent, session):
     start_date = pd.Timestamp(start_date)
     due_date = start_date + relativedelta(years =1)
     today_date = datetime.datetime.now()
-    if pr_once == 'yes':
-        speech_output = 'Hey {} '.format(user_name) + 'your total premium amount is {} '.format(prem_amt) + 'Which is due before {} '.format(due_date.strftime("%d")) + 'of {} '.format(due_date.strftime("%B")) + 'in {} '.format(due_date.strftime("%Y")) 
-    else :
-        due_date = start_date + relativedelta((today_date - start_date).days/365)
-        speech_output = 'Hey {} '.format(user_name) + 'your total premium amount is {} '.format(prem_amt) +  "and you have paid {} ".format(npr_paid) + 'premiums till now! And, your next due date is on {} '.format(due_date.strftime("%d")) + 'of {} '.format(due_date.strftime("%B")) + 'in {} '.format(due_date.strftime("%Y")) 
-  
+    real_paid = int((today_date - start_date).days/365)
+    
+    if pr_once == 'yes' and npr_paid == 0:
+        speech_output = 'Hey {} '.format(user_name) + 'your total premium amount is {} which is not yet paid!'.format(prem_amt) + ' It was due before {} '.format(due_date.strftime("%d")) + 'of {} '.format(due_date.strftime("%B")) + 'in {} '.format(due_date.strftime("%Y")) + 'Please Pay it ASAP'
+    elif pr_once == 'yes' and npr_paid == 1 :
+        speech_output = 'Hey {} '.format(user_name) + 'your total premium amount was {}! Thanks for paying that before due date.'.format(prem_amt)
+    elif pr_once == 'no':
+        due_date = start_date + relativedelta(years = npr_paid)
+        if npr_paid < real_paid:
+            speech_output = 'Hey {} '.format(user_name) + 'your total premium amount is {} '.format(prem_amt) +  "and you have only paid {} premiums till now! Please pay the remaining ASAP to avoid inconvenience".format(npr_paid) 
+        elif npr_paid == real_paid:
+            due_date += relativedelta(years =1)
+            speech_output = 'Hey {} '.format(user_name) + 'your total premium amount is {} '.format(prem_amt) +  "and you have paid {} premiums. ".format(npr_paid) + 'And, your next due date is on {} '.format(due_date.strftime("%d")) + 'of {} '.format(due_date.strftime("%B")) + 'in {} '.format(due_date.strftime("%Y"))
+
     reprompt_text = "I said " + speech_output
         
     should_end_session = False
@@ -241,7 +257,49 @@ def get_recommend_response():
     should_end_session = False
     return build_response(session_attributes, build_speechlet_response(
         card_title, speech_output, reprompt_text, should_end_session))
+
+def get_adduser_response(intent, session):
+    """ An example of a custom intent. Same structure as welcome message, just make sure to add this intent
+    in your alexa skill in order for it to work.
+    """
+    session_attributes = session.get('attributes', {})
+    card_title = "AddUser"
+    speech_output = 'Sure. I need some information about you so that I can register you. Tell me your name, age and gender'
+    reprompt_text = "I said," + speech_output
+    should_end_session = False
+    return build_response(session_attributes, build_speechlet_response(
+        card_title, speech_output, reprompt_text, should_end_session))
         
+def get_info_response(intent, session):
+    """ An example of a custom intent. Same structure as welcome message, just make sure to add this intent
+    in your alexa skill in order for it to work.
+    """
+    print("SESSION BELOW")
+    print(session)
+    card_title = "AddInfo"
+    session_attributes = session.get('attributes', {})
+    session_attributes['name'] = intent['slots']['name']['value']
+    session_attributes['age'] = intent['slots']['age']['value']
+    session_attributes['gender'] = intent['slots']['gender']['value']
+    name, age, gender, married, children, bmi, smoker = session_attributes['name'], session_attributes['age'], \
+                    session_attributes['gender'], 'single', 0, \
+                    30.22, 'no'
+    speech_output = 'Hello {}, registering you with the following information you entered. '.format(name)
+    speech_output += 'your are {} years old, you are a {}, you are {}, you have {} number of children, your BMI is {}, you {}'.format( \
+                     age, gender, married, children, bmi, 'smoke' if smoker == 'yes' else 'don\'t smoke')
+                     
+    df = pd.read_csv("user.csv")
+    id = df.id.max() + 1 # autoinc id
+    df.loc[len(df.index)] = [id, name, age, gender, married, children, bmi, smoker]  
+    print(df)
+    speech_output = 'Created and added your ID {} to memory! Sorry, Can\'t change the readonly database!'.format(id)
+    
+    reprompt_text = "I said," + speech_output
+    should_end_session = False
+    return build_response(session_attributes, build_speechlet_response(
+        card_title, speech_output, reprompt_text, should_end_session))
+          
+    
 def get_unregister_response(intent, session):
     
     session_attributes = session.get('attributes', {})
@@ -259,7 +317,7 @@ def get_unregister_response(intent, session):
     df.drop(df[df.uid == uid].index, inplace=True)
     #df.to_csv('userclaim.csv')
     print(df)
-    speech_output = 'Removed your ID {} from memory! Sorry, Can\'t change the readonly database! Bye'.format(uid)
+    speech_output = 'Removed your ID {} from memory! Sorry, Can\'t change the readonly database!'.format(uid)
     reprompt_text = "I said," + speech_output
     should_end_session = False
     return build_response(session_attributes, build_speechlet_response(
@@ -338,6 +396,10 @@ def on_intent(intent_request, session):
         return get_product_response(intent, session)
     elif intent_name == "askrecommend":
         return get_recommend_response()
+    elif intent_name == "adduser":
+        return get_adduser_response(intent, session)
+    elif intent_name == "askinfo":
+        return get_info_response(intent, session)
     elif intent_name == "removeid":
         return get_unregister_response(intent, session)
     elif intent_name == "AMAZON.HelpIntent":
