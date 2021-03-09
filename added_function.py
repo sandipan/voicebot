@@ -31,6 +31,29 @@ intent1 = {"slot" :{
         }
     }
 
+intent2 = {"slot" :{
+          "premium": {
+              "user_id" :1111,
+              "prod_id" :1234 
+              }
+        }
+    }
+
+intent3 = {"slot" :{
+          "premium": {
+              "user_id" :2222,
+              "prod_id" :2345 
+              }
+        }
+    }
+
+intent4 = {"slot" :{
+          "premium": {
+              "user_id" :1111,
+              "prod_id" :2345 
+              }
+        }
+    }
 
 def remove_user(intent):
     user_df = pd.read_csv("D:/Work/Alexa/voicebot/user.csv")
@@ -69,77 +92,45 @@ def ask_premium(intent):
     start_date = pd.Timestamp(start_date)
     due_date = start_date + relativedelta(years =1)
     today_date = datetime.datetime.now()
+    real_paid = int((today_date - start_date).days/365)
     
-    if pr_once == 'yes':
-        speech_output = 'Hey {} '.format(user_name) + 'your total premium amount is {} '.format(prem_amt) + 'Which is due before {} '.format(due_date.strftime("%d")) + 'of {} '.format(due_date.strftime("%B")) + 'in {} '.format(due_date.strftime("%Y")) 
-    else :
-        due_date = start_date + relativedelta((today_date - start_date).days/365)
-        speech_output = 'Hey {} '.format(user_name) + 'your total premium amount is {} '.format(prem_amt) +  "and you have paid {}".format(npr_paid) + 'premiums till now! And, your next due date is on {} '.format(due_date.strftime("%d")) + 'of {} '.format(due_date.strftime("%B")) + 'in {} '.format(due_date.strftime("%Y")) 
-            
+    if pr_once == 'yes' and npr_paid == 0:
+        speech_output = 'Hey {} '.format(user_name) + 'your total premium amount is {} which is not yet paid!'.format(prem_amt) + ' It was due before {} '.format(due_date.strftime("%d")) + 'of {} '.format(due_date.strftime("%B")) + 'in {} '.format(due_date.strftime("%Y")) + 'Please Pay it ASAP'
+    elif pr_once == 'yes' and npr_paid == 1 :
+        speech_output = 'Hey {} '.format(user_name) + 'your total premium amount was {}! Thanks for paying that before due date.'.format(prem_amt)
+        
+    elif pr_once == 'no':
+        due_date = start_date + relativedelta(years = npr_paid)
+        if npr_paid < real_paid:
+            speech_output = 'Hey {} '.format(user_name) + 'your total premium amount is {} '.format(prem_amt) +  "and you have only paid {} premiums till now! Please pay the remaining ASAP to avoid inconvenience".format(npr_paid) 
+        elif npr_paid == real_paid:
+            speech_output = 'Hey {} '.format(user_name) + 'your total premium amount is {} '.format(prem_amt) +  "and you have paid {} ".format(npr_paid) + 'And, your next due date is on {} '.format(due_date.strftime("%d")) + 'of {} '.format(due_date.strftime("%B")) + 'in {} '.format(due_date.strftime("%Y"))
     return print(speech_output)        
            
            
         
 def premium_alert(intent):
-    prem_count, prem_amt, user_name, pr_once, npr_paid, start_date = premium(intent1)
+    prem_count, prem_amt, user_name, pr_once, npr_paid, start_date = premium(intent)
     start_date = pd.Timestamp(start_date)
     today_date = datetime.datetime.now()
-    prem_to_paid = (today_date - start_date).days/365   
+    prem_to_paid = int((today_date - start_date).days/365) 
     default_n = int(prem_to_paid) - npr_paid
     
-    if default_n >= 2:
-        
-        speech_output = 'Hey {} '.format(user_name) + 'It seems that you have missed your last few premiums! please pay it before {}'.format(due_date.strftime("%d")) + 'of {} '.format(due_date.strftime("%B")) + 'in {} '.format(due_date.strftime("%Y"))  
+    if pr_once == 'no':
+        due_date = start_date + relativedelta(years = prem_to_paid)
+        if default_n >= 2:
+            speech_output = 'Hey {} '.format(user_name) + 'It seems that you have missed your last few premiums! please pay it ASAP'  
+        elif default_n ==1 :
+            speech_output = 'Hey {} '.format(user_name) +'Your last premium was missed. Please pay your premium before {} '.format(due_date.strftime("%d")) + 'of {} '.format(due_date.strftime("%B")) + 'in {} '.format(due_date.strftime("%Y"))
+            
+    elif pr_once =='yes' and npr_paid == 0:
+        speech_output = 'Hey {} '.format(user_name) + 'your total premium amount is {} which is not yet paid!.'.format(prem_amt) + 'Please Pay it ASAP' 
+    
     else :
-        speech_output = 'Hey {} '.format(user_name) +'No premium due'
+        speech_output = 'No Alerts for premium'
     return print(speech_output)
 
-    # should_end_session = False
-    # return build_response(session_attributes, build_speechlet_response(
-    #     card_title, speech_output, reprompt_text, should_end_session))  
-    
-"""......................................................................................"""
 
-
-
-# #Indentify user and add user function giving all the variables(This can be converted as intent handlers adter finalising the way to add user scenarios)
-# def check_user (user_id):
-    
-#     user_df = pd.read_csv("D:/Work/Alexa/voicebot/user.csv")
-#     row = user_df.loc[user_df.id == int(user_id),'name']
-    
-#     if len(row) != 0:
-        
-#         print("Hello " + row[0] + "! How can I help you today?")
-        
-#     else :
-        
-#         print("We do not have any record of you in our database! Would you like to register for our services?")
-        
-
-# """After Conforming if User wants us to add him in our Database, Alexa should be asking Following Questions:
-    
-#     'Can I please know your Name?' - name
-#     'Can you tell me your age?' - age
-#     'Please let me know your gender' - gender
-#     'Are you married?' - married
-#     'How many Children do you have'
-#     'What is your BMI?'
-#     'Do you smoke?'
-    
-#     Answer of these along with Customer id generated randomly can be appended in the existing database"""
-        
-# def add_user(name,age,gender,married,children,bmi,smoker):
-    
-#     user_df = pd.read_csv("D:/Work/Alexa/voicebot/user.csv")
-    
-#     user_id = np.random.randint(1000,10000)
-#     new_user = [int(user_id),str(name),int(age),str(gender),str(married),int(children),float(bmi),str(smoker)]
-    
-#     user_df.loc[len(user_df)] = new_user
-    
-#     return user_df
-    
     
     
           
