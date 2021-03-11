@@ -95,7 +95,7 @@ def get_policy_expiry_alert(uid):
     #df.head()
     return speech_output
 
-#Premium helper function for both ask_premium and alert_premium  - akash
+#Premium helper function for both ask_premium and alert_premium   
 def get_premium_info(uid, pid):
 
     user_df = pd.read_csv("user.csv")
@@ -113,7 +113,7 @@ def get_premium_info(uid, pid):
     return prem_count, prem_amt, user_name, pr_once, npr_paid, start_date
 
 
-def get_premium_alert(uid): # akash
+def get_premium_alert(uid):
     
     df = pd.read_csv("userprod.csv")
     row = df.loc[(df.uid == uid),'pid']
@@ -153,18 +153,19 @@ def get_id_response(intent, session):
         print(id)
         session_attributes = {'id': id}
         row = df.loc[df.id == int(id), 'name']
+        speech_output = ''
         if len(row) != 0:
             speech_output = 'Welcome {}. '.format(row.values[0])
+            alert = get_policy_expiry_alert(id)
+            if alert:
+                speech_output += 'Here are policy expiry alerts for you! ' + alert
+            alert = get_premium_alert(id)
+            print(alert)
+            if alert:
+                speech_output += 'Here are premium due alerts for you! ' + alert
+            speech_output += ' Now, tell me what do you want to know about?'
         else:
-            speech_output = 'Your id is not there in my database! '
-        alert = get_policy_expiry_alert(id)
-        if alert:
-            speech_output += 'Here are policy expiry alerts for you! ' + alert
-        alert = get_premium_alert(id)
-        print(alert)
-        if alert:
-            speech_output += 'Here are premium due alerts for you! ' + alert
-        speech_output += ' Now, tell me what do you want to know about?'
+            speech_output = 'Your ID is not there in my database! Please re-enter your ID. '
     else:
         speech_output = 'Please register to the system first and buy an insurance product! '
         speech_output += get_a_random_recommendation()
@@ -207,10 +208,12 @@ def get_service_response(intent, session):
     dfup = pd.read_csv('userprod.csv')
     dfupc = pd.merge(dfup, dfpc, left_on='pid', right_on='pid')
     df = pd.merge(dfc, dfupc, left_on=['uid','pid','did','name'], right_on=['uid','pid', 'did','name'], how='outer').fillna('$0')
-    row = df.loc[(df.uid == id) & (df.name == disease.lower()),['amt', 'maxamt']]
+    row = df.loc[(df.uid == id) & (df.name == disease.lower()),['pid', 'amt', 'maxamt']]
     print(row)
+    speech_output = ''
     if len(row) > 0:
-        speech_output = 'your coverage for {} is {} and you have claimed {} of {}'.format(disease, row.values[0][1], row.values[0][0], row.values[0][1])
+        for i in range(len(row)):
+            speech_output += 'Your coverage for {} for the product {} is {} and you have claimed {} of {}. '.format(disease, row.values[i][0], row.values[i][2], row.values[i][1], row.values[i][2])
     else:
         speech_output = '{} is not covered in your policy'.format(disease)
 
@@ -242,7 +245,7 @@ def get_premium_response(intent, session):
     return build_response(session_attributes, build_speechlet_response(
         card_title, speech_output, reprompt_text, should_end_session))
 
-def get_product_response(intent, session):    # akash
+def get_product_response(intent, session):
     """ An example of a custom intent. Same structure as welcome message, just make sure to add this intent
     in your alexa skill in order for it to work.
     """
