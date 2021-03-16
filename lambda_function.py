@@ -130,7 +130,7 @@ def get_premium_alert(uid):
             if default_n >= 2:
                 speech_output += 'It seems that you have missed your last few premiums for your product {} please pay it ASAP. '.format(pid)  
             elif default_n ==1 :
-                speech_output += 'Your last premium for product {} was missed. Please pay your premium before {}. '.format(pid, due_date.strftime("%d")) + 'of {} '.format(due_date.strftime("%B")) + 'in {} '.format(due_date.strftime("%Y"))
+                speech_output += 'Your last premium for product {} was missed. Please pay your premium before {} '.format(pid, due_date.strftime("%d")) + 'of {} '.format(due_date.strftime("%B")) + 'in {} . '.format(due_date.strftime("%Y"))
         elif pr_once =='yes' and npr_paid == 0:
             speech_output += 'Your total premium amount for product {} is {}, which is not yet paid!. '.format(pid, prem_amt) + 'Please Pay it ASAP. ' 
 
@@ -163,12 +163,12 @@ def get_id_response(intent, session):
             print(alert)
             if alert:
                 speech_output += 'Here are premium due alerts for you! ' + alert
-            speech_output += ' Now, tell me what do you want to know about?'
+            speech_output += ' Now, tell me what do you want to know about? You can ask for your benefits, premiums, recommendations, add or remove your user ID.'
         else:
             speech_output = 'Your ID is not there in my database! Please re-enter your ID. '
     else:
         speech_output = 'Please register to the system first and buy an insurance product! '
-        speech_output += get_a_random_recommendation()
+        speech_output += 'The recommended product for you is: {}'.format(get_a_random_recommendation())
     reprompt_text = "I said " + speech_output
         
     should_end_session = False
@@ -181,7 +181,7 @@ def get_benefit_response(intent, session):
     """
     session_attributes = session.get('attributes', {})
     card_title = "Benefits"
-    speech_output = 'what service do you want to know more about?'
+    speech_output = 'what service do you want to know more about? you can ask for the coverage for a disease. '
     reprompt_text = "I said," + speech_output
     should_end_session = False
     return build_response(session_attributes, build_speechlet_response(
@@ -268,7 +268,7 @@ def get_product_response(intent, session):
         real_paid = int((today_date - start_date).days/365)
         
         if pr_once == 'yes' and npr_paid == 0:
-            speech_output = 'Hey {} '.format(user_name) + 'your total premium amount for product {} is {} which is not yet paid!'.format(pid, prem_amt) + ' It was due before {} '.format(due_date.strftime("%d")) + 'of {} '.format(due_date.strftime("%B")) + 'in {} '.format(due_date.strftime("%Y")) + 'Please Pay it ASAP. '
+            speech_output = 'Hey {} '.format(user_name) + 'your total premium amount for product {} is {} which is not yet paid!'.format(pid, prem_amt) + ' It was due before {} '.format(due_date.strftime("%d")) + 'of {} '.format(due_date.strftime("%B")) + 'in {} .'.format(due_date.strftime("%Y")) + 'Please Pay it ASAP. '
         elif pr_once == 'yes' and npr_paid == 1 :
             speech_output = 'Hey {} '.format(user_name) + 'your total premium amount for product {} was {}! Thanks for paying that before due date.'.format(pid, prem_amt)
         elif pr_once == 'no':
@@ -287,14 +287,17 @@ def get_product_response(intent, session):
 
 def get_cbf_recommendation(pid): # in case of existing user feturn top 5 recommended products based on what he has bought
     df = pd.read_csv('cbf_reco.csv')
-    return df[df.Product == pid].values.tolist()[0][2:]
+    dfp = pd.read_csv('prod.csv')
+    pids = df[df.Product == pid].values.tolist()[0][2:]
+    return dfp.loc[dfp.id.isin(pids), 'pname'].values.tolist()
+    #return df[df.Product == pid].values.tolist()[0][2:]
 
 def get_a_random_recommendation(): # in case of new user
     #plans = ['Health Maintenance Organization (HMO)', 'Preferred Provider Organization (PPO)', 'Point of Service (POS)', 'High Deductible Health (HDHP)',
     #    'Short term Health Insurance', 'Gap Insurance']
     #return 'You can go with a {} medical health insurance plan'.format(random.choice(plans))
     df =  pd.read_csv('prod.csv')
-    return random.choice(df.id.tolist())
+    return random.choice(df.pname.tolist())
         
 def get_recommend_response(intent, session):
     """ An example of a custom intent. Same structure as welcome message, just make sure to add this intent
@@ -307,11 +310,11 @@ def get_recommend_response(intent, session):
         id = int(session_attributes['id'])
         df = pd.read_csv('userprod.csv')
         pid = random.choice(df.loc[(df.uid == id), 'pid'].tolist())
-        pids = get_cbf_recommendation(pid)
-        speech_output = 'Top 5 products recommended for you are with the following IDs {} .'.format(', '.join(map(str, pids)))
+        pnames = get_cbf_recommendation(pid)
+        speech_output = 'Top 5 products recommended for you are the following: {} .'.format(', '.join(map(str, pnames)))
     else:
-        pid = get_a_random_recommendation()
-        speech_output = 'You can buy the product with ID {}.'.format(pid)
+        pname = get_a_random_recommendation()
+        speech_output = 'You can buy the product {}.'.format(pname)
     
     reprompt_text = "I said," + speech_output
     should_end_session = False
@@ -390,7 +393,7 @@ def get_welcome_response():
     """
     session_attributes = {}
     card_title = "Welcome"
-    speech_output = "Hello, I am your recommendation assistant, your application has started! you can ask for your benefits, premiums, recommendations, remove your ID or ask for help! First tell me your user id!"
+    speech_output = "Hello, I am Alexa, your health insurance assistant! You can ask for your benefits, premiums, recommendations, add or remove your user ID, or ask for help! First tell me your user id!"
     # If the user either does not reply to the welcome message or says something
     # that is not understood, they will be prompted again with this text.
     reprompt_text = "I don't know if you heard me, I am your recommendation assitant! Tell me your user id!"
