@@ -95,17 +95,17 @@ def ask_premium(intent):
     real_paid = int((today_date - start_date).days/365)
     
     if pr_once == 'yes' and npr_paid == 0:
-        speech_output = 'Hey {} '.format(user_name) + 'your total premium amount is {} '.format(prem_amt) + 'You have not paid it yet. Please Pay it ASAP'
+        speech_output = 'Hey {} '.format(user_name) + 'your total one time premium amount is {}! '.format(prem_amt) + 'Its not paid yet! Please Pay it ASAP'
     elif pr_once == 'yes' and npr_paid == 1 :
-        speech_output = 'Hey {} '.format(user_name) + 'your total premium amount was {}! Payment is done.Thanks!.'.format(prem_amt)
+        speech_output = 'Hey {} '.format(user_name) + 'your total one time premium amount was {}! Payment is done.Thanks!.'.format(prem_amt)
         
-    elif pr_once == 'no':
+    elif pr_once == 'no':   
         due_date = start_date + relativedelta(years = npr_paid)
         if npr_paid < real_paid:
-            speech_output = 'Hey {} '.format(user_name) + 'your total premium amount is {} and you have paid only {} yearly premiums! '.format(prem_amt, npr_paid) + "Please pay the remaining {} ASAP".format(real_paid-npr_paid)
+            speech_output = 'Hey {} '.format(user_name) + 'your total premium amount is {} and you have missed your last {} yearly premiums! '.format(prem_amt, (real_paid - npr_paid)) + "Please pay it ASAP"
         elif npr_paid == real_paid:
-            speech_output = 'Hey {} your total premium amount is {}! '.format(user_name,prem_amt)  +  "you must pay it before {} ".format(due_date.strftime("%d")) + '{},'.format(due_date.strftime("%B")) + '{}'.format(due_date.strftime("%Y"))
-    return print(speech_output)        
+            speech_output = 'Hey {} your total premium amount is {}! '.format(user_name,prem_amt)  +  "you must pay your next premium before {} ".format(due_date.strftime("%d")) + '{},'.format(due_date.strftime("%B")) + '{}'.format(due_date.strftime("%Y"))
+    return print(speech_output)     
            
            
         
