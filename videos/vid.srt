@@ -1,0 +1,27 @@
+1
+00:00:05 --> 00:00:16
+Hello, I am Alexa, your health insurance assistant! You can ask for your benefits, premiums and recommendations! First tell me your user id!
+
+2
+00:00:25 --> 00:00:42
+Welcome John. Your last premium for policy Alpha Hospital Cash Insurance was missed, which was due on 05 of March 2021, please pay it ASAP. Now, tell me what do you want to know about? You can ask for your benefits, premiums and recommendations.
+
+3
+00:00:48 --> 00:00:52
+what service do you want to know more about? you can ask for the coverage for a disease.
+
+4
+00:00:59 --> 00:01:05
+Your coverage for orthopedic for the policy Alpha Hospital Cash Insurance is $15000 and you have claimed $1000.
+
+5
+00:01:12 --> 00:01:16
+diabetes is not covered in your policy.
+
+6
+00:01:23 --> 00:01:34
+Hey John , your premium amount for policy Alpha Hospital Cash Insurance is $500 and you have only paid 2 premium(s) till now! Please pay the remaining ASAP to avoid inconvenience.
+
+7
+00:01:39 --> 00:01:46
+Top 2 products recommended for you are: Alpha Comprehensive Insurance and Alpha Care Micro Insurance .

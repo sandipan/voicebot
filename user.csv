@@ -1,7 +1,7 @@
 id,name,age,gender,married,children,bmi,smoker
-1111,John,33,male,yes,2,30.56,no
-2222,Lena,24,female,no,0,25.24,yes
-3000,ANJ,19,female,yes,0,29.07966413189208,no
+john1985,John,33,male,yes,2,30.56,no
+l2002,Lena,24,female,no,0,25.24,yes
+bob1990,Bob,29,female,yes,0,29.08,no
 3001,PCY,68,female,no,0,29.119153234792996,yes
 3002,DSJ,45,male,no,0,32.81686641385376,yes
 3003,CIB,89,female,no,0,38.8340232700443,yes
